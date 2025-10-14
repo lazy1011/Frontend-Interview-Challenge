@@ -1,127 +1,152 @@
-/**
- * ScheduleView Component
- *
- * Main component that orchestrates the schedule display.
- * This component should compose smaller components together.
- *
- * TODO for candidates:
- * 1. Create the component structure (header, controls, calendar)
- * 2. Compose DoctorSelector, DayView, WeekView together
- * 3. Handle view switching (day vs week)
- * 4. Manage state or use the useAppointments hook
- * 5. Think about component composition and reusability
- */
-
 'use client';
 
 import { useState } from 'react';
-import type { CalendarView } from '@/types';
+import { doctors } from '@/data/mockData';
+import { useAppointments } from '@/hooks/useAppointments';
+import { DoctorSelector } from './DoctorSelector';
+import { DayView } from './DayView';
+import { WeekView } from './WeekView';
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 
-// TODO: Import your components
-// import { DoctorSelector } from './DoctorSelector';
-// import { DayView } from './DayView';
-// import { WeekView } from './WeekView';
+export function ScheduleView() {
+  const [selectedDoctorId, setSelectedDoctorId] = useState(doctors[0].id);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
 
-interface ScheduleViewProps {
-  selectedDoctorId: string;
-  selectedDate: Date;
-  view: CalendarView;
-  onDoctorChange: (doctorId: string) => void;
-  onDateChange: (date: Date) => void;
-  onViewChange: (view: CalendarView) => void;
-}
+  const { appointments, timeSlots } = useAppointments(
+    selectedDoctorId,
+    currentDate,
+    viewMode
+  );
 
-/**
- * ScheduleView Component
- *
- * This is the main container component for the schedule interface.
- *
- * TODO: Implement this component
- *
- * Consider:
- * - How to structure the layout (header, controls, calendar)
- * - How to compose smaller components
- * - How to pass data down to child components
- * - How to handle user interactions (view switching, date changes)
- */
-export function ScheduleView({
-  selectedDoctorId,
-  selectedDate,
-  view,
-  onDoctorChange,
-  onDateChange,
-  onViewChange,
-}: ScheduleViewProps) {
-  // TODO: Use the useAppointments hook to fetch data
-  // const { appointments, doctor, loading, error } = useAppointments({
-  //   doctorId: selectedDoctorId,
-  //   date: selectedDate,
-  // });
+  const navigateDate = (direction: 'prev' | 'next') => {
+    const newDate = new Date(currentDate);
+    if (viewMode === 'day') {
+      newDate.setDate(currentDate.getDate() + (direction === 'next' ? 1 : -1));
+    } else {
+      newDate.setDate(currentDate.getDate() + (direction === 'next' ? 7 : -7));
+    }
+    setCurrentDate(newDate);
+  };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg">
-      {/* TODO: Implement the component structure */}
-
-      {/* Header with doctor info and controls */}
-      <div className="border-b border-gray-200 p-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Doctor Schedule</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              TODO: Display doctor name and specialty
-            </p>
-          </div>
-
-          <div className="flex gap-4">
-            {/* TODO: Add DoctorSelector component */}
-            <div className="text-sm text-gray-500">Doctor Selector</div>
-
-            {/* TODO: Add date picker */}
-            <div className="text-sm text-gray-500">Date Picker</div>
-
-            {/* TODO: Add view toggle buttons (Day/Week) */}
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-7xl mx-auto space-y-4">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Hospital Appointment Scheduler
+            </h1>
             <div className="flex gap-2">
               <button
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded"
-                onClick={() => onViewChange('day')}
+                onClick={() => setViewMode('day')}
+                className={`px-4 py-2 rounded-lg font-medium ${
+                  viewMode === 'day'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
               >
-                Day
+                Day View
               </button>
               <button
-                className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded"
-                onClick={() => onViewChange('week')}
+                onClick={() => setViewMode('week')}
+                className={`px-4 py-2 rounded-lg font-medium ${
+                  viewMode === 'week'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
               >
-                Week
+                Week View
               </button>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Calendar View */}
-      <div className="p-6">
-        {/* TODO: Conditionally render DayView or WeekView based on view prop */}
-        <div className="text-center text-gray-500 py-12">
-          <p>Calendar View Goes Here</p>
-          <p className="text-sm mt-2">
-            Implement DayView and WeekView components and render based on selected view
-          </p>
+          <DoctorSelector
+            doctors={doctors}
+            selectedDoctorId={selectedDoctorId}
+            onSelect={setSelectedDoctorId}
+          />
+
+          {/* Date Navigation */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => navigateDate('prev')}
+              className="p-2 hover:bg-gray-100 rounded-lg"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <div className="text-center">
+              <div className="font-semibold text-lg">
+                {viewMode === 'day'
+                  ? currentDate.toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })
+                  : `Week of ${currentDate.toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}`}
+              </div>
+            </div>
+            <button
+              onClick={() => navigateDate('next')}
+              className="p-2 hover:bg-gray-100 rounded-lg"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
-        {/* TODO: Uncomment when components are ready */}
-        {/* {view === 'day' ? (
+        {/* Legend */}
+        <div className="flex gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-blue-500 rounded"></div>
+            <span>Checkup</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-green-500 rounded"></div>
+            <span>Consultation</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-orange-500 rounded"></div>
+            <span>Follow-up</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-purple-500 rounded"></div>
+            <span>Procedure</span>
+          </div>
+        </div>
+
+        {/* Calendar Views */}
+        {viewMode === 'day' ? (
           <DayView
+            doctorId={selectedDoctorId}
+            date={currentDate}
             appointments={appointments}
-            doctor={doctor}
-            date={selectedDate}
+            timeSlots={timeSlots}
           />
         ) : (
           <WeekView
+            doctorId={selectedDoctorId}
+            date={currentDate}
             appointments={appointments}
-            doctor={doctor}
-            weekStartDate={getWeekStart(selectedDate)}
           />
-        )} */}
+        )}
+
+        {/* Empty State */}
+        {appointments.length === 0 && (
+          <div className="bg-white rounded-lg shadow p-12 text-center text-gray-500">
+            <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>
+              No appointments scheduled for this{' '}
+              {viewMode === 'day' ? 'day' : 'week'}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
