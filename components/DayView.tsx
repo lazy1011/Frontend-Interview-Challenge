@@ -3,6 +3,7 @@
 import { Appointment } from '@/types';
 import { TimeSlot } from '@/domain/TimeSlot';
 import { AppointmentCard } from '../app/UI/AppointmentCard';
+import { CurrentTimeIndicator } from './CurrentTimeIndicator';
 
 interface DayViewProps {
   doctorId: string;
@@ -11,15 +12,15 @@ interface DayViewProps {
   timeSlots: TimeSlot[];
 }
 
-export function DayView({ appointments, timeSlots }: DayViewProps) {
+export function DayView({ date, appointments, timeSlots }: DayViewProps) {
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
       <div className="overflow-x-auto">
-        <div className="min-w-[300px]">
+        <div className="min-w-[300px] relative">
+          <CurrentTimeIndicator date={date} />
+          
           {timeSlots.map((slot, idx) => {
-            const slotAppointments = appointments.filter(apt =>
-              slot.overlaps(apt)
-            );
+            const slotAppointments = appointments.filter(apt => slot.overlaps(apt));
             const hour = slot.start.getHours();
             const minute = slot.start.getMinutes();
             const timeLabel = `${hour.toString().padStart(2, '0')}:${minute
@@ -29,12 +30,12 @@ export function DayView({ appointments, timeSlots }: DayViewProps) {
             return (
               <div
                 key={idx}
-                className="flex border-b border-gray-200 hover:bg-gray-50"
+                className="flex border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
               >
-                <div className="w-20 p-2 text-sm font-medium text-gray-600 border-r border-gray-200">
+                <div className="w-20 p-3 text-sm font-medium text-gray-600 dark:text-gray-400 border-r border-gray-200 dark:border-gray-700 flex-shrink-0">
                   {timeLabel}
                 </div>
-                <div className="flex-1 p-1 min-h-[60px] relative">
+                <div className="flex-1 p-2 min-h-[60px] relative">
                   {slotAppointments.map(apt => {
                     const aptStart = new Date(apt.startTime);
                     const aptEnd = new Date(apt.endTime);
@@ -44,13 +45,9 @@ export function DayView({ appointments, timeSlots }: DayViewProps) {
                     );
                     const height = Math.max(durationMinutes, 30);
 
-                    // Only render if appointment starts in this slot
-                    if (
-                      aptStart.getHours() === hour &&
-                      startMinute === minute
-                    ) {
+                    if (aptStart.getHours() === hour && startMinute === minute) {
                       return (
-                        <div key={apt.id} style={{ height: `${height}px` }}>
+                        <div key={apt.id} style={{ height: `${height}px` }} className="mb-1">
                           <AppointmentCard appointment={apt} />
                         </div>
                       );

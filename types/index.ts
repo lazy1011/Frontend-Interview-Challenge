@@ -12,6 +12,8 @@ export interface Patient {
   id: string;
   name: string;
   dateOfBirth: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface Appointment {
@@ -21,5 +23,15 @@ export interface Appointment {
   startTime: string;
   endTime: string;
   type: 'Checkup' | 'Consultation' | 'Follow-up' | 'Procedure';
-  status: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
+  notes?: string;
+}
+
+export type UserRole = 'front-desk' | 'doctor';
+
+export interface User {
+  id: string;
+  name: string;
+  role: UserRole;
+  doctorId?: string; // Only for doctor role
 }

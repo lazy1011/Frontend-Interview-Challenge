@@ -1,5 +1,5 @@
-import { appointments, patients } from '@/data/mockData';
-import { Appointment, Patient } from '@/types';
+import { appointments, patients, doctors } from '@/data/mockData';
+import { Appointment, Patient, Doctor } from '@/types';
 
 export class AppointmentService {
   static getAppointmentsByDoctorAndDate(
@@ -30,8 +30,33 @@ export class AppointmentService {
     });
   }
 
+  static searchAppointments(
+    searchTerm: string,
+    doctorId?: string
+  ): Appointment[] {
+    const lowerSearch = searchTerm.toLowerCase();
+    
+    return appointments.filter(apt => {
+      if (doctorId && apt.doctorId !== doctorId) return false;
+      
+      const patient = this.getPatient(apt.patientId);
+      const doctor = this.getDoctor(apt.doctorId);
+      
+      return (
+        patient?.name.toLowerCase().includes(lowerSearch) ||
+        doctor?.name.toLowerCase().includes(lowerSearch) ||
+        apt.type.toLowerCase().includes(lowerSearch) ||
+        apt.id.toLowerCase().includes(lowerSearch)
+      );
+    });
+  }
+
   static getPatient(patientId: string): Patient | undefined {
     return patients.find(p => p.id === patientId);
+  }
+
+  static getDoctor(doctorId: string): Doctor | undefined {
+    return doctors.find(d => d.id === doctorId);
   }
 
   static getAllAppointments(): Appointment[] {

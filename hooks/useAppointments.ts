@@ -1,22 +1,39 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Appointment } from '@/types';
 import { TimeSlot } from '@/domain/TimeSlot';
 import { AppointmentService } from '@/services/appointmentService';
 
 export function useAppointments(
   doctorId: string,
   date: Date,
-  viewMode: 'day' | 'week'
+  viewMode: 'day' | 'week',
+  searchTerm?: string
 ) {
   const appointments = useMemo(() => {
+    let apts;
+    
     if (viewMode === 'day') {
-      return AppointmentService.getAppointmentsByDoctorAndDate(doctorId, date);
+      apts = AppointmentService.getAppointmentsByDoctorAndDate(doctorId, date);
     } else {
-      return AppointmentService.getAppointmentsByDoctorAndWeek(doctorId, date);
+      apts = AppointmentService.getAppointmentsByDoctorAndWeek(doctorId, date);
     }
-  }, [doctorId, date, viewMode]);
+
+    // Apply search filter if provided
+    if (searchTerm && searchTerm.trim()) {
+      const lowerSearch = searchTerm.toLowerCase();
+      apts = apts.filter(apt => {
+        const patient = AppointmentService.getPatient(apt.patientId);
+        return (
+          patient?.name.toLowerCase().includes(lowerSearch) ||
+          apt.type.toLowerCase().includes(lowerSearch) ||
+          apt.id.toLowerCase().includes(lowerSearch)
+        );
+      });
+    }
+
+    return apts;
+  }, [doctorId, date, viewMode, searchTerm]);
 
   const timeSlots = useMemo(() => TimeSlot.generateTimeSlots(date), [date]);
 
