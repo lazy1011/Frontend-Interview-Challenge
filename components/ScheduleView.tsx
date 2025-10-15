@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { doctors } from '@/data/mockData';
 import { useAppointments } from '@/hooks/useAppointments';
 import { useUser } from '@/context/UserContext';
@@ -29,6 +29,13 @@ export function ScheduleView() {
   const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Update selected doctor when user role changes
+  useEffect(() => {
+    if (!canViewAllDoctors && currentUser.doctorId) {
+      setSelectedDoctorId(currentUser.doctorId);
+    }
+  }, [currentUser.doctorId, canViewAllDoctors]);
+
   const { appointments, timeSlots } = useAppointments(
     selectedDoctorId,
     currentDate,
@@ -37,6 +44,12 @@ export function ScheduleView() {
   );
 
   const selectedDoctor = doctors.find(d => d.id === selectedDoctorId);
+
+  const handleDoctorChange = (doctorId: string) => {
+    setSelectedDoctorId(doctorId);
+    // Clear search when changing doctors for better UX
+    setSearchTerm('');
+  };
 
   const navigateDate = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentDate);
@@ -89,7 +102,7 @@ export function ScheduleView() {
           <DoctorSelector
             doctors={availableDoctors}
             selectedDoctorId={selectedDoctorId}
-            onSelect={setSelectedDoctorId}
+            onSelect={handleDoctorChange}
           />
         )}
 
@@ -187,6 +200,7 @@ export function ScheduleView() {
       {/* Schedule Display */}
       {viewMode === 'day' ? (
         <DayView
+          key={`${selectedDoctorId}-${currentDate.toISOString()}`}
           doctorId={selectedDoctorId}
           date={currentDate}
           appointments={appointments}
@@ -194,6 +208,7 @@ export function ScheduleView() {
         />
       ) : (
         <WeekView
+          key={`${selectedDoctorId}-${currentDate.toISOString()}`}
           doctorId={selectedDoctorId}
           date={currentDate}
           appointments={appointments}
@@ -210,7 +225,7 @@ export function ScheduleView() {
           <p className="text-gray-500 dark:text-gray-400">
             {searchTerm
               ? 'Try adjusting your search criteria'
-              : 'No appointments scheduled for this period'}
+              : `No appointments scheduled for ${selectedDoctor?.name} on this ${viewMode === 'day' ? 'day' : 'week'}`}
           </p>
         </div>
       )}

@@ -21,25 +21,14 @@ export const doctors: Doctor[] = [
   }
 ];
 
-export const patients: Patient[] = [
-  { id: 'P1', name: 'John Smith', dateOfBirth: '1985-03-15', email: 'john.smith@email.com', phone: '555-0101' },
-  { id: 'P2', name: 'Emma Johnson', dateOfBirth: '1990-07-22', email: 'emma.j@email.com', phone: '555-0102' },
-  { id: 'P3', name: 'Michael Brown', dateOfBirth: '1978-11-30', email: 'mbrown@email.com', phone: '555-0103' },
-  { id: 'P4', name: 'Sophia Davis', dateOfBirth: '1995-02-14', email: 'sophia.d@email.com', phone: '555-0104' },
-  { id: 'P5', name: 'James Wilson', dateOfBirth: '1982-09-08', email: 'jwilson@email.com', phone: '555-0105' },
-  { id: 'P6', name: 'Olivia Martinez', dateOfBirth: '1988-05-19', email: 'olivia.m@email.com', phone: '555-0106' },
-  { id: 'P7', name: 'William Anderson', dateOfBirth: '1975-12-03', email: 'wanderson@email.com', phone: '555-0107' },
-  { id: 'P8', name: 'Ava Taylor', dateOfBirth: '1992-08-27', email: 'ava.t@email.com', phone: '555-0108' },
-  { id: 'P9', name: 'Liam Thomas', dateOfBirth: '1987-04-11', email: 'liam.t@email.com', phone: '555-0109' },
-  { id: 'P10', name: 'Isabella Moore', dateOfBirth: '1993-10-25', email: 'isabella.m@email.com', phone: '555-0110' },
-  ...Array.from({ length: 40 }, (_, i) => ({
-    id: `P${i + 11}`,
-    name: `Patient ${i + 11}`,
-    dateOfBirth: '1990-01-01',
-    email: `patient${i + 11}@email.com`,
-    phone: `555-${String(i + 111).padStart(4, '0')}`
-  }))
-];
+// Uniform patient names from Patient 1 to Patient 50
+export const patients: Patient[] = Array.from({ length: 50 }, (_, i) => ({
+  id: `P${i + 1}`,
+  name: `Patient ${i + 1}`,
+  dateOfBirth: '1990-01-01',
+  email: `patient${i + 1}@email.com`,
+  phone: `555-${String(i + 101).padStart(4, '0')}`
+}));
 
 const generateAppointments = (): Appointment[] => {
   const types: Array<'Checkup' | 'Consultation' | 'Follow-up' | 'Procedure'> = 
@@ -88,7 +77,7 @@ const generateAppointments = (): Appointment[] => {
         appointments.push({
           id: `A${appointments.length + 1}`,
           doctorId: doctor.id,
-          patientId: patients[Math.floor(Math.random() * Math.min(20, patients.length))].id,
+          patientId: patients[Math.floor(Math.random() * patients.length)].id,
           startTime: start.toISOString(),
           endTime: end.toISOString(),
           type: types[Math.floor(Math.random() * types.length)],
